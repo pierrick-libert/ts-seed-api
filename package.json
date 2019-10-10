@@ -1,0 +1,51 @@
+{
+  "name": "navwei-api-v2",
+  "version": "1.0.0",
+  "description": "Typescript API for Navwei to handle CRUD operations",
+  "main": "index.js",
+  "scripts": {
+    "start": "./node_modules/.bin/tsc-watch --onSuccess \"node ./dist/index.js\"",
+    "compile": "./node_modules/.bin/tsc",
+    "test": "./node_modules/mocha/bin/mocha -r ts-node/register ./functional-test/*.test.ts",
+    "lint": "./node_modules/.bin/tslint --project tslint.json 'endpoints/*.ts' 'endpoints/**/*.ts' 'lib/*.ts' 'lib/**/*.ts' 'functional-test/*.ts'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/10ten-me/navwei-api-v2.git"
+  },
+  "keywords": [
+    "typescript",
+    "API",
+    "CRUD",
+    "Navwei"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/10ten-me/navwei-api-v2/issues"
+  },
+  "homepage": "https://github.com/10ten-me/navwei-api-v2#readme",
+  "dependencies": {
+    "cors": "2.8.5",
+    "express": "4.17.1",
+    "pg": "7.12.1",
+    "pg-native": "3.0.0",
+    "ts-node": "8.4.1",
+    "tsc-watch": "4.0.0",
+    "typescript": "3.6.4"
+  },
+  "devDependencies": {
+    "@types/chai": "4.2.3",
+    "@types/cors": "2.8.6",
+    "@types/express": "4.17.1",
+    "@types/mocha": "5.2.7",
+    "@types/node": "12.7.12",
+    "@types/pg": "7.11.2",
+    "@types/supertest": "2.0.8",
+    "chai": "4.2.0",
+    "mocha": "6.2.1",
+    "supertest": "4.0.2",
+    "ts-loader": "6.2.0",
+    "tslint": "5.20.0"
+  }
+}

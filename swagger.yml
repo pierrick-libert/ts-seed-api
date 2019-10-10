@@ -1,0 +1,8 @@
+swagger: "2.0"
+info:
+  title: TS Express Seed
+  description: Typescript + Express Seed Project
+  version: 1.0.0
+  host:ts-express-seed.com
+schemes:
+  - https

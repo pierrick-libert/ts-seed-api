@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "lib": [ "es6", "dom", "es2015" ],
+    "moduleResolution": "node",
+    "rootDir": "./",
+    "outDir": "dist",
+    "sourceMap": true,
+    "allowJs": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "preserveConstEnums": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "exclude": [ "node_modules", "build", "webpack", "dist" ],
+  "types": [ "typePatches" ]
+}
