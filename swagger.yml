@@ -1,8 +1,8 @@
 swagger: "2.0"
 info:
-  title: TS Express Seed
-  description: Typescript + Express Seed Project
+  title: TS Seed API
+  description: Typescript + Seed API Project
   version: 1.0.0
-  host:ts-express-seed.com
+  host:ts-seed-api.com
 schemes:
   - https
