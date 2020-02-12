@@ -52,22 +52,6 @@ npm run lint
 
 _If any_
 
-## Glossary
-
-### Business
-
-|Name|Synonym(s)|Definition|
-|--|--|--|
-
-### Technical
-
-|Name|Synonym(s)|Definition|
-|--|--|--|
-
-## CURL Example
-
-Some CURL example can be found [here](https://github.com/10ten-me/ts-seed-api/wiki/%5BCURL%5D-CURL-Example)
-
 ## Module
 
 In this seed, you already have some modules prepared to help your development, you may remove some from your projects if you don't need them
@@ -144,6 +128,6 @@ When updating the code and before creating the PR, please keep in mind the point
 When contributing the code you confirm that:
 
 * Your contribution is created by you
-* You understand and agree that your contribution is private, will be stored indefinitely, can be redistributed as the part of Kalvad, modified or completely removed from Kalvad
+* You understand and agree that your contribution is public, will be stored indefinitely, can be redistributed as the part of the project, modified or completely removed from the project
 * You waive all rights to your contribution
-* Unless you request otherwise, you can be mentioned as the author of the contribution in the Kalvad documentation and change log
+* Unless you request otherwise, you can be mentioned as the author of the contribution in the project documentation and change log
