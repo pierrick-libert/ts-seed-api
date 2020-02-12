@@ -42,17 +42,19 @@ export class Sample implements Endpoint {
 
   public initializeRoutes(): void {
     // Get method
-    this.router.get(this.basePath, this.getAll.bind(this));
-    this.router.get(`${this.basePath}/error-not-found`, this.errorNotFound.bind(this));
-    this.router.get(`${this.basePath}/error`, this.error.bind(this));
-    this.router.get(`${this.basePath}/bad-request`, this.badRequest.bind(this));
-    this.router.get(`${this.basePath}/resource-not-created`, this.resourceNotCreated.bind(this));
-    this.router.get(`${this.basePath}/logged`, MiddlewareFactory.requiresLogin, this.getLogged.bind(this));
+    this.router.get(this.basePath, (rq: Request, rs: Response) => this.getAll(rq, rs));
+    this.router.get(`${this.basePath}/error-not-found`, (rq: Request, rs: Response, n: NextFunction) => this.errorNotFound(rq, rs, n));
+    this.router.get(`${this.basePath}/error`, (rq: Request, rs: Response, n: NextFunction) => this.error(rq, rs, n));
+    this.router.get(`${this.basePath}/bad-request`, (rq: Request, rs: Response, n: NextFunction) => this.badRequest(rq, rs, n));
+    this.router.get(`${this.basePath}/resource-not-created`,
+      (rq: Request, rs: Response, n: NextFunction) => this.resourceNotCreated(rq, rs, n));
+    this.router.get(`${this.basePath}/logged`, MiddlewareFactory.requiresLogin,
+      (rq: Request, rs: Response, n: NextFunction) => this.getLogged(rq, rs, n));
     // Post method
-    this.router.post(this.basePath, this.create.bind(this));
-    this.router.post(`${this.basePath}/auth`, this.auth.bind(this));
+    this.router.post(this.basePath, (rq: Request, rs: Response) => this.create(rq, rs));
+    this.router.post(`${this.basePath}/auth`, (rq: Request, rs: Response, n: NextFunction) => this.auth(rq, rs, n));
     // Put method
-    this.router.put(`${this.basePath}/:id`, this.update.bind(this));
+    this.router.put(`${this.basePath}/:id`, (rq: Request, rs: Response, n: NextFunction) => this.update(rq, rs, n));
   }
 
   /******************************************************************
