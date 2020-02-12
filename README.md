@@ -118,6 +118,7 @@ Clone the project in your computer and create a branch from `master`, not `devel
 * First create an issue with the proper label `enhancement`, `bug`, `feature` or `architecture`
 * Create your branch by using one the label above + `/{issue-name}`
 * Make your changes
+* Don't forget to update the Swagger and the tests if ever you update the endpoint examples
 * Create a PR and then assign one of the contributor below with the role `admin`
 * Your code will be reviewed and comments/changes may be requested
 * If everything goes well, your code will be merged with `develop` and then to `master` after a while
