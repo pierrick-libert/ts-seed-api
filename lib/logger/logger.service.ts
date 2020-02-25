@@ -7,8 +7,11 @@ export class LoggerService {
 
   private logger: Logger;
 
-  constructor(loggerFactory: LoggerFactory) {
-    this.logger = loggerFactory.getLogger();
+  constructor() {}
+
+  // Init the logger
+  public init(isProd: boolean): void {
+    this.logger = new LoggerFactory(isProd).getLogger();
   }
 
   // Return the PostgreSQL client

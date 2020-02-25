@@ -1,35 +1,17 @@
 'use strict';
 
-import {PgFactory} from './lib/pg/pg.factory';
-import {PgService} from './lib/pg/pg.service';
+import 'reflect-metadata';
 import {AppService} from './lib/app/app.service';
+import {Container} from 'aurelia-dependency-injection';
 import {SentryFactory} from './lib/sentry/sentry.factory';
-import {LoggerFactory} from './lib/logger/logger.factory';
-import {LoggerService} from './lib/logger/logger.service';
-
-// List all endpoints used by your applications
-import {Sample} from './endpoints/sample';
 
 // Define if we're in a production env
 const isProd = process.env.NODE_ENV === 'production' ? true : false;
 
 // Init the sentry with proper information
 new SentryFactory(isProd);
-// Init the DB Pool
-const pgService = new PgService(new PgFactory());
-// Init the logger
-const logger = new LoggerService(new LoggerFactory(isProd));
 
-if (isProd === false) {
-  logger.getLogger().debug('Logging initialized at debug level');
-}
 // Add all your endpoints there
-const app = new AppService(
-  [
-    new Sample(pgService, logger),
-  ],
-  logger,
-  5000,
-);
-
+const app = new Container().get(AppService);
+app.init(5000, isProd);
 app.listen();

@@ -7,7 +7,7 @@ export class LoggerFactory {
 
   private logger: Logger;
 
-  constructor(isProd: boolean = false) {
+  constructor(isProd: boolean) {
     this.logger = createLogger({
       format: format.combine(
         format.timestamp(),

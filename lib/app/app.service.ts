@@ -2,27 +2,41 @@
 
 import * as cors from 'cors';
 import * as express from 'express';
-import {Endpoint} from './app.interface';
 import * as fileUpload from 'express-fileupload';
+import {inject} from 'aurelia-dependency-injection';
 import {LoggerService} from '../logger/logger.service';
 import {ResponseFactory} from '../response/response.factory';
 import {MiddlewareFactory} from '../middleware/middleware.factory';
 
+// List all endpoints used by your applications
+import {Sample} from '../../endpoints/sample';
+
+@inject(
+  LoggerService,
+  // endpoints
+  Sample
+)
 export class AppService {
 
   // You can setup this basePath in your code to have the lang checked automatically
   public static basePath = '/:lang((en){1})';
   public port: number;
-  public loggerService: LoggerService;
+  public isProd: boolean;
   public app: express.Application;
 
-  constructor(endpoints: Endpoint[], loggerService: LoggerService, port: number) {
+  constructor(
+    private loggerService: LoggerService,
+    private sample: Sample) {
+  }
+
+  public init(port: number, isProd: boolean): void {
     this.app = express();
     this.port = port;
-    this.loggerService = loggerService;
+    this.isProd = isProd;
     // Call the inits
+    this.loggerService.init(isProd);
     this.initializeMiddlewares();
-    this.initializeEndpoints(endpoints);
+    this.initializeEndpoints();
     this.initializeErrorMiddleware();
   }
 
@@ -42,10 +56,8 @@ export class AppService {
   }
 
   // Init all routes for all endpoints mapped in index.ts
-  private initializeEndpoints(endpoints: Endpoint[]): void {
-    endpoints.forEach((endpoint: Endpoint) => {
-      this.app.use('/', endpoint.router);
-    });
+  private initializeEndpoints(): void {
+    this.app.use('/', this.sample.router);
     // Put this at the end so it gets all call which are not mapped
     this.app.use('/', this.endpointNotMapped.bind(this));
   }

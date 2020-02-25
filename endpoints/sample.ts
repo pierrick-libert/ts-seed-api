@@ -1,10 +1,10 @@
 'use strict';
 
 import {Params} from '../lib/enum';
-import {PgService} from '../lib/pg/pg.service';
 import {AppService} from '../lib/app/app.service';
 import {Endpoint} from '../lib/app/app.interface';
 import {JwtService} from '../lib/jwt/jwt.service';
+import {inject} from 'aurelia-dependency-injection';
 import {ValidService} from '../lib/valid/valid.service';
 import {ValidFactory} from '../lib/valid/valid.factory';
 import {LoggerService} from '../lib/logger/logger.service';
@@ -16,12 +16,19 @@ import {BadRequestException} from '../lib/exceptions/bad-request.exception';
 import {ItemNotFoundException} from '../lib/exceptions/item-not-found.factory';
 import {ResourceNotCreatedException} from '../lib/exceptions/resource-not-created.exception';
 
+import {PgService} from '../lib/pg/pg.service';
+import {PgFactory} from '../lib/pg/pg.factory';
+
+@inject(
+  // PgService,
+  LoggerService,
+  ValidService,
+  new PgFactory('test'),
+  new PgService(pgFactory)
+)
 export class Sample implements Endpoint {
 
-  public pgService: PgService;
-  public logger: LoggerService;
   public router: Router = Router();
-  public validService: ValidService;
   public basePath = `${AppService.basePath}/sample`;
 
   // Just a sample for AJV validation, you should put it somewhere else for more complex project
@@ -33,28 +40,35 @@ export class Sample implements Endpoint {
     required: ['email', 'password']
   };
 
-  constructor(pgService: PgService, logger: LoggerService) {
-    this.pgService = pgService;
-    this.logger = logger;
-    this.validService = new ValidService();
+  constructor(// private pgService: PgService,
+    private logger: LoggerService,
+    private validService: ValidService) {
     this.initializeRoutes();
   }
 
   public initializeRoutes(): void {
     // Get method
-    this.router.get(this.basePath, (rq: Request, rs: Response) => this.getAll(rq, rs));
-    this.router.get(`${this.basePath}/error-not-found`, (rq: Request, rs: Response, n: NextFunction) => this.errorNotFound(rq, rs, n));
-    this.router.get(`${this.basePath}/error`, (rq: Request, rs: Response, n: NextFunction) => this.error(rq, rs, n));
-    this.router.get(`${this.basePath}/bad-request`, (rq: Request, rs: Response, n: NextFunction) => this.badRequest(rq, rs, n));
+    this.router.get(this.basePath,
+      (rq: Request, rs: Response) => this.getAll(rq, rs));
+    this.router.get(`${this.basePath}/error-not-found`,
+      (rq: Request, rs: Response, n: NextFunction) => this.errorNotFound(rq, rs, n));
+    this.router.get(`${this.basePath}/error`,
+      (rq: Request, rs: Response, n: NextFunction) => this.error(rq, rs, n));
+    this.router.get(`${this.basePath}/bad-request`,
+      (rq: Request, rs: Response, n: NextFunction) => this.badRequest(rq, rs, n));
     this.router.get(`${this.basePath}/resource-not-created`,
       (rq: Request, rs: Response, n: NextFunction) => this.resourceNotCreated(rq, rs, n));
-    this.router.get(`${this.basePath}/logged`, MiddlewareFactory.requiresLogin,
+    this.router.get(`${this.basePath}/logged`,
+      (rq: Request, rs: Response, n: NextFunction) => MiddlewareFactory.requiresLogin(rq, rs, n),
       (rq: Request, rs: Response, n: NextFunction) => this.getLogged(rq, rs, n));
     // Post method
-    this.router.post(this.basePath, (rq: Request, rs: Response) => this.create(rq, rs));
-    this.router.post(`${this.basePath}/auth`, (rq: Request, rs: Response, n: NextFunction) => this.auth(rq, rs, n));
+    this.router.post(this.basePath,
+      (rq: Request, rs: Response) => this.create(rq, rs));
+    this.router.post(`${this.basePath}/auth`,
+      (rq: Request, rs: Response, n: NextFunction) => this.auth(rq, rs, n));
     // Put method
-    this.router.put(`${this.basePath}/:id`, (rq: Request, rs: Response, n: NextFunction) => this.update(rq, rs, n));
+    this.router.put(`${this.basePath}/:id`,
+      (rq: Request, rs: Response, n: NextFunction) => this.update(rq, rs, n));
   }
 
   /******************************************************************
@@ -168,10 +182,12 @@ export class Sample implements Endpoint {
     // The last parameter is the request sent by express
     const valid = this.validService.checkParamsValidity('Auth User', [Params.Body], this.authSchema, req);
     if (valid.success === false) {
+      this.logger.getLogger().error('An error happen');
       return next(new BadRequestException(valid.message));
     }
     // Your PG SQL should be there!
     if (req.body.email !== 'test@kalvad.com' || req.body.password !== 'kalvad42') {
+      this.logger.getLogger().error('An error happen');
       return next(new ItemNotFoundException(req.body.email, 'User'));
     }
 
