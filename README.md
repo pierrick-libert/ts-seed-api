@@ -1,5 +1,11 @@
 # TS Seed API
 
+The purpose of this repository is just to share a homemade seed to create an API in NodeJS/Express/Typescript.
+
+You just need to clone the repository and update it to handle your different requirements.
+
+The use is pretty simple and do not require additional work though room for improvement is possible.
+
 ## Install all dependencies
 
 ```bash
