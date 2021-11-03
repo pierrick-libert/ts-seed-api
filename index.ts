@@ -29,7 +29,7 @@ const app = new AppService(
     new Sample(pgService, logger),
   ],
   logger,
-  5000,
+  8080,
 );
 
 app.listen();
