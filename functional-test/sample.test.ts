@@ -4,7 +4,7 @@ import {expect} from 'chai';
 import * as supertest from 'supertest';
 
 // This agent refers to PORT where program is runninng.
-const server = supertest.agent('http://localhost:5000');
+const server = supertest.agent('http://localhost:8080');
 
 // Here are all the endpoints we're going to call
 const sampleApi = '/en/sample';
