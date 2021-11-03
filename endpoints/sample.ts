@@ -30,7 +30,8 @@ export class Sample implements Endpoint {
       email: ValidFactory.getStringSchema(1),
       password: ValidFactory.getStringSchema(1)
     },
-    required: ['email', 'password']
+    required: ['email', 'password'],
+    type: 'object'
   };
 
   constructor(pgService: PgService, logger: LoggerService) {

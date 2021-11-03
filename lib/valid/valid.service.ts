@@ -1,21 +1,21 @@
 'use strict';
 
-import * as ajv from 'ajv';
+import Ajv, {ValidateFunction, ErrorObject} from 'ajv';
 import {Params} from '../enum';
 import {Request} from 'express';
 import {ValidObj} from './valid.interface';
 
 export class ValidService {
 
-  private schemaValidator: ajv.Ajv;
+  private schemaValidator: Ajv;
 
   constructor() {
-    this.schemaValidator = new ajv();
+    this.schemaValidator = new Ajv();
   }
 
   public validate(input: any, schema: any): {valid: boolean, message: string} {
 
-    const schemaValidator: ajv.ValidateFunction = this.schemaValidator.compile(schema);
+    const schemaValidator: ValidateFunction = this.schemaValidator.compile(schema);
     schemaValidator(input);
 
     const hasErrors: boolean = schemaValidator.errors ?
@@ -33,12 +33,12 @@ export class ValidService {
     return {valid: true, message: ''};
   }
 
-  private extractErrors(error: ajv.ErrorObject): string {
+  private extractErrors(error: ErrorObject): string {
 
     let message = '';
 
-    if (error.dataPath !== '') {
-      message =  error.dataPath + ' ' + error.message;
+    if (error.instancePath !== '') {
+      message =  error.instancePath + ' ' + error.message;
     } else if (error.message) {
       message = error.message.replace(/^\w/, c => c.toUpperCase());
     }
