@@ -11,7 +11,7 @@ import {LoggerService} from './lib/logger/logger.service';
 import {Sample} from './endpoints/sample';
 
 // Define if we're in a production env
-const isProd = process.env.NODE_ENV === 'production' ? true : false;
+const isProd = process.env.NODE_ENV === 'production';
 
 // Init the sentry with proper information
 new SentryFactory(isProd);
