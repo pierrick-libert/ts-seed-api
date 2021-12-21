@@ -1,5 +1,3 @@
-'use strict';
-
 import Ajv, {ValidateFunction, ErrorObject} from 'ajv';
 import {Params} from '../enum';
 import {Request} from 'express';
@@ -13,7 +11,7 @@ export class ValidService {
     this.schemaValidator = new Ajv();
   }
 
-  public validate(input: any, schema: any): {valid: boolean, message: string} {
+  public validate(input: any, schema: any): {valid: boolean; message: string} {
 
     const schemaValidator: ValidateFunction = this.schemaValidator.compile(schema);
     schemaValidator(input);
@@ -32,23 +30,6 @@ export class ValidService {
 
     return {valid: true, message: ''};
   }
-
-  private extractErrors(error: ErrorObject): string {
-
-    let message = '';
-
-    if (error.instancePath !== '') {
-      message =  error.instancePath + ' ' + error.message;
-    } else if (error.message) {
-      message = error.message.replace(/^\w/, c => c.toUpperCase());
-    }
-
-    return message;
-  }
-
-  /******************************************************************
-  **                          Valid Section                        **
-  ******************************************************************/
 
   // Generic function to get params
   // Endpoint: string = the name of the endpoint which called this function for log purpose
@@ -78,4 +59,16 @@ export class ValidService {
     return {success: validObj.valid, message: ''};
   }
 
+  private extractErrors(error: ErrorObject): string {
+
+    let message = '';
+
+    if (error.instancePath !== '') {
+      message =  error.instancePath + ' ' + error.message;
+    } else if (error.message) {
+      message = error.message.replace(/^\w/, c => c.toUpperCase());
+    }
+
+    return message;
+  }
 }

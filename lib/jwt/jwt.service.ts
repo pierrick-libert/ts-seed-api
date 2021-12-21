@@ -1,5 +1,3 @@
-'use strict';
-
 import {Config} from '../config';
 import * as jwt from 'jsonwebtoken';
 import * as JwtInterface from './jwt.interface';

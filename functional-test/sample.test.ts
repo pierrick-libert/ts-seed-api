@@ -1,5 +1,3 @@
-'use strict';
-
 import {expect} from 'chai';
 import * as supertest from 'supertest';
 
@@ -36,7 +34,7 @@ describe('Full process', function() {
           expect(res.body.message).to.be.equal('GET good');
           done();
         }
-    });
+      });
   });
 
   it('POST call', function(done) {
@@ -54,7 +52,7 @@ describe('Full process', function() {
           expect(res.body.message).to.be.equal('POST good');
           done();
         }
-    });
+      });
   });
 
   it('PUT call', function(done) {
@@ -72,7 +70,7 @@ describe('Full process', function() {
           expect(res.body.message).to.be.equal('PUT good');
           done();
         }
-    });
+      });
   });
 
   it('POST auth call', function(done) {
@@ -92,7 +90,7 @@ describe('Full process', function() {
           token = res.body.token;
           done();
         }
-    });
+      });
   });
 
   it('GET logged user call', function(done) {
@@ -113,7 +111,7 @@ describe('Full process', function() {
           expect(res.body.user.id).to.be.equal('1');
           done();
         }
-    });
+      });
   });
 
   it('GET error call', function(done) {
@@ -130,7 +128,7 @@ describe('Full process', function() {
           expect(res.body.message).to.be.equal('Internal Error');
           done();
         }
-    });
+      });
   });
 
   it('GET error not found call', function(done) {
@@ -148,7 +146,7 @@ describe('Full process', function() {
           expect(res.body.message).to.be.equal('My resource referred as Resource has not been found');
           done();
         }
-    });
+      });
   });
 
   it('GET bad request call', function(done) {
@@ -166,7 +164,7 @@ describe('Full process', function() {
           expect(res.body.message).to.be.equal('Wrong payload');
           done();
         }
-    });
+      });
   });
 
   it('GET resource not created call', function(done) {
@@ -184,7 +182,7 @@ describe('Full process', function() {
           expect(res.body.message).to.be.equal('Resource creation has failed');
           done();
         }
-    });
+      });
   });
 
   it('GET login required error call', function(done) {
@@ -202,7 +200,7 @@ describe('Full process', function() {
           expect(res.body.message).to.be.equal('You must be logged in to request this endpoint');
           done();
         }
-    });
+      });
   });
 
   it('GET error endpoint does not exist', function(done) {
@@ -219,7 +217,7 @@ describe('Full process', function() {
           expect(res.body.message).to.be.a('string');
           done();
         }
-    });
+      });
   });
 
 });

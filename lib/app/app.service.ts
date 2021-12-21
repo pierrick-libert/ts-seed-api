@@ -1,9 +1,7 @@
-'use strict';
-
-import * as cors from 'cors';
-import * as express from 'express';
+import cors from 'cors';
 import {Endpoint} from './app.interface';
-import * as fileUpload from 'express-fileupload';
+import fileUpload from 'express-fileupload';
+import express, {RequestHandler} from 'express';
 import {LoggerService} from '../logger/logger.service';
 import {ResponseFactory} from '../response/response.factory';
 import {MiddlewareFactory} from '../middleware/middleware.factory';
@@ -26,11 +24,17 @@ export class AppService {
     this.initializeErrorMiddleware();
   }
 
+  public listen(): void {
+    this.app.listen(this.port, () => {
+      this.loggerService.getLogger().info(`App listening on the port ${this.port}`);
+    });
+  }
+
   // Init all middlewares to handle errors and so on
   private initializeMiddlewares(): void {
     this.app.use(cors({credentials: true}));
     this.app.options('*', cors({credentials: true}));
-    this.app.use(express.json({type: 'application/*'}));
+    this.app.use(express.json({type: 'application/*'}) as RequestHandler);
     // Middleware
     this.app.use(fileUpload({
       limits: { fileSize: 10 * 1024 * 1024 }, // 10mb max
@@ -57,11 +61,5 @@ export class AppService {
 
   private endpointNotMapped(request: express.Request, response: express.Response): void {
     ResponseFactory.make(404, {'message': 'Endpoint does not exist for this http method'}, response);
-  }
-
-  public listen(): void {
-    this.app.listen(this.port, () => {
-      this.loggerService.getLogger().info(`App listening on the port ${this.port}`);
-    });
   }
 }

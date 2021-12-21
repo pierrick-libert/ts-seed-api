@@ -1,5 +1,4 @@
-'use strict';
-
+import 'reflect-metadata';
 import {PgFactory} from './lib/pg/pg.factory';
 import {PgService} from './lib/pg/pg.service';
 import {AppService} from './lib/app/app.service';

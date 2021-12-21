@@ -1,9 +1,7 @@
-'use strict';
-
 /******************************************************************
 **                        Params Section                         **
 ******************************************************************/
-
+// eslint-disable-next-line no-shadow
 export enum Params {
   Body = 'body',
   Query = 'query',

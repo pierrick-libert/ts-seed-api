@@ -1,5 +1,3 @@
-'use strict';
-
 import {Params} from '../lib/enum';
 import {PgService} from '../lib/pg/pg.service';
 import {AppService} from '../lib/app/app.service';

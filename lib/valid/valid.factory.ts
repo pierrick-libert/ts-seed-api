@@ -1,5 +1,3 @@
-'use strict';
-
 import * as ValidInterface from './valid.interface';
 
 export class ValidFactory {

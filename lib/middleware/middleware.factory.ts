@@ -1,5 +1,3 @@
-'use strict';
-
 import {captureException} from '@sentry/node';
 import {JwtService} from '../jwt/jwt.service';
 import {JwtPayload} from '../jwt/jwt.interface';

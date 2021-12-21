@@ -1,0 +1,24 @@
+{
+   "type": "postgres",
+   "host": "localhost",
+   "port": 5432,
+   "username": "postgres",
+   "password": "toto42",
+   "database": "ts_seed_api",
+   "synchronize": true,
+   "logging": false,
+   "entities": [
+      "models/models/**/*.ts"
+   ],
+   "migrations": [
+      "models/migrations/**/*.ts"
+   ],
+   "subscribers": [
+      "models/subscribers/**/*.ts"
+   ],
+   "cli": {
+      "entitiesDir": "models/models",
+      "migrationsDir": "models/migrations",
+      "subscribersDir": "models/subscribers"
+   }
+}
