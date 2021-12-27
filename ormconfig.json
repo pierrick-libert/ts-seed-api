@@ -1,24 +1,25 @@
 {
+   "name": "default",
    "type": "postgres",
-   "host": "localhost",
+   "host": "127.0.0.1",
    "port": 5432,
    "username": "postgres",
    "password": "toto42",
    "database": "ts_seed_api",
-   "synchronize": true,
+   "synchronize": false,
    "logging": false,
    "entities": [
-      "models/models/**/*.ts"
+      "./dist/models/models/**/*.js"
    ],
    "migrations": [
-      "models/migrations/**/*.ts"
+      "./dist/models/migrations/**/*.js"
    ],
    "subscribers": [
-      "models/subscribers/**/*.ts"
+      "./dist/models/subscribers/**/*.js"
    ],
    "cli": {
-      "entitiesDir": "models/models",
-      "migrationsDir": "models/migrations",
-      "subscribersDir": "models/subscribers"
+      "entitiesDir": "./models/models",
+      "migrationsDir": "./models/migrations",
+      "subscribersDir": "./models/subscribers"
    }
 }

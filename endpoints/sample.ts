@@ -1,6 +1,6 @@
 import {Params} from '../lib/enum';
-import {PgService} from '../lib/pg/pg.service';
-import {AppService} from '../lib/app/app.service';
+import {Database} from '../lib/db/db.service';
+import {Sample} from '../models/models/sample';
 import {Endpoint} from '../lib/app/app.interface';
 import {JwtService} from '../lib/jwt/jwt.service';
 import {ValidService} from '../lib/valid/valid.service';
@@ -14,13 +14,13 @@ import {BadRequestException} from '../lib/exceptions/bad-request.exception';
 import {ItemNotFoundException} from '../lib/exceptions/item-not-found.factory';
 import {ResourceNotCreatedException} from '../lib/exceptions/resource-not-created.exception';
 
-export class Sample implements Endpoint {
+export class SampleEndpoint implements Endpoint {
 
-  public pgService: PgService;
+  public db: Database;
   public logger: LoggerService;
   public router: Router = Router();
   public validService: ValidService;
-  public basePath = `${AppService.basePath}/sample`;
+  public basePath = '/sample';
 
   // Just a sample for AJV validation, you should put it somewhere else for more complex project
   public authSchema = {
@@ -32,8 +32,8 @@ export class Sample implements Endpoint {
     type: 'object'
   };
 
-  constructor(pgService: PgService, logger: LoggerService) {
-    this.pgService = pgService;
+  constructor(db: Database, logger: LoggerService) {
+    this.db = db;
     this.logger = logger;
     this.validService = new ValidService();
     this.initializeRoutes();
@@ -41,7 +41,7 @@ export class Sample implements Endpoint {
 
   public initializeRoutes(): void {
     // Get method
-    this.router.get(this.basePath, (rq: Request, rs: Response) => this.getAll(rq, rs));
+    this.router.get(this.basePath, (rq: Request, rs: Response, n: NextFunction) => this.getAll(rq, rs, n));
     this.router.get(`${this.basePath}/error-not-found`, (rq: Request, rs: Response, n: NextFunction) => this.errorNotFound(rq, rs, n));
     this.router.get(`${this.basePath}/error`, (rq: Request, rs: Response, n: NextFunction) => this.error(rq, rs, n));
     this.router.get(`${this.basePath}/bad-request`, (rq: Request, rs: Response, n: NextFunction) => this.badRequest(rq, rs, n));
@@ -68,8 +68,15 @@ export class Sample implements Endpoint {
   ** Query Parameters: None
   ** Body Parameters: none
   */
-  public getAll(request: Request, response: Response): void {
-    ResponseFactory.make(200, {'message': 'GET good'}, response);
+  public async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
+    let data: Sample[];
+    try {
+      data = await (await this.db.getConnection())
+        .getRepository(Sample).createQueryBuilder('sample').getMany();
+    } catch (error) {
+      return next(new HttpException(500, error.message));
+    }
+    ResponseFactory.make(200, {'message': res.__('Success'), 'samples': data}, res);
   }
 
   /*

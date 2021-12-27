@@ -1,4 +1,6 @@
 import cors from 'cors';
+import i18n from 'i18n';
+import path from 'path';
 import {Endpoint} from './app.interface';
 import fileUpload from 'express-fileupload';
 import express, {RequestHandler} from 'express';
@@ -8,8 +10,6 @@ import {MiddlewareFactory} from '../middleware/middleware.factory';
 
 export class AppService {
 
-  // You can setup this basePath in your code to have the lang checked automatically
-  public static basePath = '/:lang((en){1})';
   public port: number;
   public loggerService: LoggerService;
   public app: express.Application;
@@ -35,6 +35,13 @@ export class AppService {
     this.app.use(cors({credentials: true}));
     this.app.options('*', cors({credentials: true}));
     this.app.use(express.json({type: 'application/*'}) as RequestHandler);
+    // Configure translations module
+    i18n.configure({
+      locales: ['en', 'fr'],
+      defaultLocale: 'en',
+      directory: path.join(__dirname, '../../../locales')
+    });
+    this.app.use(i18n.init);
     // Middleware
     this.app.use(fileUpload({
       limits: { fileSize: 10 * 1024 * 1024 }, // 10mb max

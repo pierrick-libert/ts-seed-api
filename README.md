@@ -35,6 +35,48 @@ npm test
 npm run lint
 ```
 
+## ORM
+
+In order to ease the setup and management of the project, an [ORM](https://typeorm.io/) has been installed and must be used.
+
+### Models
+
+All changes and models should be applied into the folder `models/models`.
+
+You should create a model file per table or context in order to keep a certain logic.
+
+E.g:
+
+ * User table should be created inside `models/models/user.ts`
+ * User translation table should be created inside `models/models/user.ts`
+ * Post table should be created inside `models/models/post.ts`
+
+### Migrations
+
+To create a migration with your last change, run the command below:
+
+```bash
+npm run typeorm migration:generate -- -n ExplicitMigrationName
+```
+
+A good practice is to modify a model and then run a migration. Try to avoid to modify multiple models at once and create a global migration which may lead to confusion and harden the management.
+
+To apply the latest migration(s), run the command below:
+
+```bash
+npm run typeorm migration:run
+```
+
+To learn more about [migrations](https://typeorm.io/#/migrations) or the [ORM](https://typeorm.io/#/entities), consult these pages.
+
+### Configuration
+
+You may impact the configuration file by modifying `ormconfig.json`.
+
+Be careful while changing the [file](https://typeorm.io/#/using-ormconfig) since you may impact the whole project.
+
+This file should configured differently according to your environment. You may also use the environment variables as mentioned in the documentation.
+
 ## Technological stack
 
  * Nodejs 12.11 mininmum

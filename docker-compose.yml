@@ -1,0 +1,32 @@
+version: '3.5'
+services:
+    api:
+        restart: always
+        build:
+            context: .
+            dockerfile: Dockerfile
+        external_links:
+            - postgres
+        environment:
+            - SENTRY_DSN=${SENTRY_URL}
+            - DEBUG=${DEBUG:-true}
+        ports:
+            - 8083:8083
+        networks:
+            - ts-seed-api-network
+        depends_on:
+            - postgres
+    postgres:
+        image: postgres:14
+        restart: always
+        ports:
+            - 5440:5432
+        environment:
+            - POSTGRES_PASSWORD=toto42
+            - POSTGRES_USER=postgres
+            - POSTGRES_DB=${POSTGRESQL_ADDON_DB:-ts_seed_api}
+        networks:
+            - ts-seed-api-network
+networks:
+  ts-seed-api-network:
+    name: ts-seed-api-local
