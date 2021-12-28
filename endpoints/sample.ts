@@ -1,59 +1,50 @@
 import {Params} from '../lib/enum';
+import {Repository, InsertResult} from 'typeorm';
 import {Database} from '../lib/db/db.service';
 import {Sample} from '../models/models/sample';
 import {Endpoint} from '../lib/app/app.interface';
-import {JwtService} from '../lib/jwt/jwt.service';
 import {ValidService} from '../lib/valid/valid.service';
 import {ValidFactory} from '../lib/valid/valid.factory';
 import {LoggerService} from '../lib/logger/logger.service';
 import {HttpException} from '../lib/exceptions/http.factory';
 import {Request, Response, Router, NextFunction} from 'express';
 import {ResponseFactory} from '../lib/response/response.factory';
-import {MiddlewareFactory} from '../lib/middleware/middleware.factory';
+import {SampleFactory} from '../lib/modules/sample/sample.factory';
 import {BadRequestException} from '../lib/exceptions/bad-request.exception';
 import {ItemNotFoundException} from '../lib/exceptions/item-not-found.factory';
 import {ResourceNotCreatedException} from '../lib/exceptions/resource-not-created.exception';
 
 export class SampleEndpoint implements Endpoint {
 
-  public db: Database;
   public logger: LoggerService;
+  public factory: SampleFactory;
   public router: Router = Router();
   public validService: ValidService;
+  public repository: Repository<Sample>;
   public basePath = '/sample';
 
-  // Just a sample for AJV validation, you should put it somewhere else for more complex project
-  public authSchema = {
-    properties: {
-      email: ValidFactory.getStringSchema(1),
-      password: ValidFactory.getStringSchema(1)
-    },
-    required: ['email', 'password'],
-    type: 'object'
-  };
-
-  constructor(db: Database, logger: LoggerService) {
-    this.db = db;
+  constructor(logger: LoggerService) {
     this.logger = logger;
+    this.factory = new SampleFactory();
     this.validService = new ValidService();
     this.initializeRoutes();
+  }
+
+  public async init(db: Database): Promise<SampleEndpoint> {
+    this.repository = await (await db.getConnection()).getRepository(Sample);
+    return this;
   }
 
   public initializeRoutes(): void {
     // Get method
     this.router.get(this.basePath, (rq: Request, rs: Response, n: NextFunction) => this.getAll(rq, rs, n));
-    this.router.get(`${this.basePath}/error-not-found`, (rq: Request, rs: Response, n: NextFunction) => this.errorNotFound(rq, rs, n));
-    this.router.get(`${this.basePath}/error`, (rq: Request, rs: Response, n: NextFunction) => this.error(rq, rs, n));
-    this.router.get(`${this.basePath}/bad-request`, (rq: Request, rs: Response, n: NextFunction) => this.badRequest(rq, rs, n));
-    this.router.get(`${this.basePath}/resource-not-created`,
-      (rq: Request, rs: Response, n: NextFunction) => this.resourceNotCreated(rq, rs, n));
-    this.router.get(`${this.basePath}/logged`, MiddlewareFactory.requiresLogin,
-      (rq: Request, rs: Response, n: NextFunction) => this.getLogged(rq, rs, n));
+    this.router.get(`${this.basePath}/:id`, (rq: Request, rs: Response, n: NextFunction) => this.getById(rq, rs, n));
     // Post method
-    this.router.post(this.basePath, (rq: Request, rs: Response) => this.create(rq, rs));
-    this.router.post(`${this.basePath}/auth`, (rq: Request, rs: Response, n: NextFunction) => this.auth(rq, rs, n));
+    this.router.post(this.basePath, (rq: Request, rs: Response, n: NextFunction) => this.create(rq, rs, n));
     // Put method
     this.router.put(`${this.basePath}/:id`, (rq: Request, rs: Response, n: NextFunction) => this.update(rq, rs, n));
+    // Delete method
+    this.router.delete(`${this.basePath}/:id`, (rq: Request, rs: Response, n: NextFunction) => this.delete(rq, rs, n));
   }
 
   /******************************************************************
@@ -62,82 +53,51 @@ export class SampleEndpoint implements Endpoint {
 
   /*
   ** Method: GET
-  ** Description: Get data about a specific admin
+  ** Description: Get a list of samples
   **
-  ** Path Parameters: ID from the table `admin`
+  ** Path Parameters: None
   ** Query Parameters: None
   ** Body Parameters: none
   */
   public async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     let data: Sample[];
     try {
-      data = await (await this.db.getConnection())
-        .getRepository(Sample).createQueryBuilder('sample').getMany();
+      data = await this.repository.createQueryBuilder('sample').getMany();
     } catch (error) {
+      this.logger.getLogger().error(error);
       return next(new HttpException(500, error.message));
     }
-    ResponseFactory.make(200, {'message': res.__('Success'), 'samples': data}, res);
+    ResponseFactory.make(200, data, res);
   }
 
   /*
   ** Method: GET
-  ** Description: Return a 404 Not Found exception
+  ** Description: Get a specific sample from its ID
   **
-  ** Path Parameters: ID from the table `admin`
+  ** Path Parameters: ID of the resource
   ** Query Parameters: None
   ** Body Parameters: none
   */
-  public errorNotFound(request: Request, response: Response, next: NextFunction): void {
-    next(new ItemNotFoundException('Resource', 'My resource'));
-  }
-
-  /*
-  ** Method: GET
-  ** Description: Return an Internal Error
-  **
-  ** Path Parameters: ID from the table `admin`
-  ** Query Parameters: None
-  ** Body Parameters: none
-  */
-  public error(request: Request, response: Response, next: NextFunction): void {
-    next(new HttpException(500, 'Internal Error'));
-  }
-
-  /*
-  ** Method: GET
-  ** Description: Return a 400 Bad Request
-  **
-  ** Path Parameters: ID from the table `admin`
-  ** Query Parameters: None
-  ** Body Parameters: none
-  */
-  public badRequest(request: Request, response: Response, next: NextFunction): void {
-    next(new BadRequestException('Wrong payload'));
-  }
-
-  /*
-  ** Method: GET
-  ** Description: Return a 400 Resource creation has failed
-  **
-  ** Path Parameters: ID from the table `admin`
-  ** Query Parameters: None
-  ** Body Parameters: none
-  */
-  public resourceNotCreated(request: Request, response: Response, next: NextFunction): void {
-    next(new ResourceNotCreatedException());
-  }
-
-  /*
-  ** Method: GET
-  ** Description: Get data about the logged user
-  **
-  ** Path Parameters: None
-  ** Query Parameters: None
-  ** Body Parameters: none
-  */
-  public async getLogged(req: Request, response: Response, next: NextFunction): Promise<void> {
-    const user = {'id': '1', 'email': req.body.email, 'role': 'user'};
-    ResponseFactory.make(200, {'message': ResponseFactory.message, 'user': user}, response);
+  public async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
+    // First check if the value is correct
+    const valid = this.validService.checkParamsValidity(
+      '[Sample] Get By Id', [Params.Path], ValidFactory.getIdSchema(), req);
+    if (valid.success === false) {
+      return next(new BadRequestException(valid.message));
+    }
+    // Try to retrieve the resource from its ID
+    let data: Sample | undefined = {} as Sample | undefined;
+    try {
+      data = await this.repository.createQueryBuilder('sample')
+        .where('sample.id = :id', {id: req.params.id}).getOne();
+      if (!data) {
+        return next(new ItemNotFoundException(req.params.id, 'Sample'));
+      }
+    } catch (error) {
+      this.logger.getLogger().error(error);
+      return next(new HttpException(500, error.message));
+    }
+    ResponseFactory.make(200, data, res);
   }
 
   /******************************************************************
@@ -146,45 +106,31 @@ export class SampleEndpoint implements Endpoint {
 
   /*
   ** Method: POST
-  ** Description: Create a resource
+  ** Description: Create a sample
   **
   ** Path Parameters: None
   ** Query Parameters: None
-  ** Body Parameters: None
+  ** Body Parameters: Refers to the model `Sample` in `/models/models/sample.ts`
   */
-  public create(request: Request, response: Response): void {
-    ResponseFactory.make(201, {'message': 'POST good'}, response);
-  }
-
-  /*
-  ** Method: POST
-  ** Description: Return a JWT token for an active user
-  **
-  ** Path Parameters: None
-  ** Query Parameters: None
-  ** Body Parameters: Email and Password of an active user
-  */
-  public async auth(req: Request, response: Response, next: NextFunction): Promise<void> {
-    // Here is an example of how to properly use the Valid module
-    // The first parameter will be used to display the content of the parameters with a key before hand
-    // Thus in the log, you'll be able to recognize which payload belongs to which call
-    // The second parameter is an array of all params you want to check, you may have:
-    // - Params.Body, - Params.Query, - Params.Path and - Params.Files
-    // The third parameter is the schema to validate your payload
-    // The last parameter is the request sent by express
-    const valid = this.validService.checkParamsValidity('Auth User', [Params.Body], this.authSchema, req);
+  public async create(req: Request, res: Response, next: NextFunction): Promise<void> {
+    // First check if the value is correct
+    const valid = this.validService.checkParamsValidity(
+      '[Sample] Create', [Params.Body], this.factory.createSchema(), req);
     if (valid.success === false) {
       return next(new BadRequestException(valid.message));
     }
-    // Your PG SQL should be there!
-    if (req.body.email !== 'test@kalvad.com' || req.body.password !== 'kalvad42') {
-      return next(new ItemNotFoundException(req.body.email, 'User'));
+    // Try to create the resource from the body
+    let data: InsertResult = {} as InsertResult;
+    try {
+      data = await this.repository.insert(req.body as Sample);
+      if (!data || data.raw.length === 0) {
+        return next(new ResourceNotCreatedException());
+      }
+    } catch (error) {
+      this.logger.getLogger().error(error);
+      return next(new HttpException(500, error.message));
     }
-
-    // Create the token
-    const user = {'id': '1', 'email': req.body.email, 'role': 'user'};
-    const token = JwtService.createToken(user);
-    ResponseFactory.make(200, {'message': ResponseFactory.message, 'user': user, 'token': token}, response);
+    ResponseFactory.make(201, {'id': data.raw[0].id}, res);
   }
 
   /******************************************************************
@@ -193,14 +139,55 @@ export class SampleEndpoint implements Endpoint {
 
   /*
   ** Method: PUT
-  ** Description: Update an admin
+  ** Description: Update a sample
+  **
+  ** Path Parameters: ID from the resource
+  ** Query Parameters: None
+  ** Body Parameters: Refers to the model `Sample` in `/models/models/sample.ts`
+  */
+  public async update(req: Request, res: Response, next: NextFunction): Promise<void> {
+    // First check if the value is correct
+    const valid = this.validService.checkParamsValidity(
+      '[Sample] Update', [Params.Body, Params.Path], this.factory.updateSchema(), req);
+    if (valid.success === false) {
+      return next(new BadRequestException(valid.message));
+    }
+    // Try to update the resource from the body
+    try {
+      await this.repository.update(req.params.id, req.body as Sample);
+    } catch (error) {
+      this.logger.getLogger().error(error);
+      return next(new HttpException(500, error.message));
+    }
+    ResponseFactory.make(200, {'id': req.params.id}, res);
+  }
+
+  /******************************************************************
+  **                         DELETE Section                        **
+  ******************************************************************/
+
+  /*
+  ** Method: DELETE
+  ** Description: Delete a sample
   **
   ** Path Parameters: ID from the resource
   ** Query Parameters: None
   ** Body Parameters: None
   */
-  public async update(req: Request, response: Response, next: NextFunction): Promise<void> {
-    ResponseFactory.make(200, {'message': 'PUT good'}, response);
+  public async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+    // First check if the value is correct
+    const valid = this.validService.checkParamsValidity(
+      '[Sample] Delete', [Params.Path], ValidFactory.getIdSchema(), req);
+    if (valid.success === false) {
+      return next(new BadRequestException(valid.message));
+    }
+    // Try to delete the resource
+    try {
+      await this.repository.delete(req.params.id);
+    } catch (error) {
+      this.logger.getLogger().error(error);
+      return next(new HttpException(500, error.message));
+    }
+    ResponseFactory.make(200, {}, res);
   }
-
 }

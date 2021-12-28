@@ -32,13 +32,15 @@ const logger = new LoggerService(new LoggerFactory(isProd));
 if (isProd === false) {
   logger.getLogger().debug('Logging initialized at debug level');
 }
-// Add all your endpoints there
-const app = new AppService(
-  [
-    new SampleEndpoint(db, logger),
-  ],
-  logger,
-  argv.port,
-);
+(async () => {
+  // Add all your endpoints there
+  const app = new AppService(
+    [
+      await new SampleEndpoint(logger).init(db),
+    ],
+    logger,
+    argv.port,
+  );
 
-app.listen();
+  app.listen();
+})();

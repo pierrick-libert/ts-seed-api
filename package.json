@@ -4,7 +4,7 @@
    "description": "Typescript Seed API for all projects to handle CRUD operations",
    "main": "index.js",
    "scripts": {
-      "start": "env TZ='Asia/Dubai' ./node_modules/.bin/tsc-watch --noClear --onSuccess \"node ./dist/index.js\"",
+      "start": "env TZ='Asia/Dubai' ./node_modules/.bin/tsc-watch --noClear --onSuccess \"node ./dist/index.js --port 8084\"",
       "compile": "./node_modules/.bin/tsc --alwaysStrict",
       "test": "./node_modules/mocha/bin/mocha -r ts-node/register ./functional-test/*.test.ts",
       "lint": "./node_modules/.bin/eslint -c .eslintrc.js --ext .ts 'index.ts' 'endpoints/*.ts' 'endpoints/**/*.ts' 'lib/*.ts' 'lib/**/*.ts' 'functional-test/*.ts'",
