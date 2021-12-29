@@ -8,4 +8,4 @@ dist/
 package-lock.json
 
 to-do.txt
-ŝwagger/swagger-generated.yml
+swagger/swagger-generated.yml
