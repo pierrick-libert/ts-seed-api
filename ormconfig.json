@@ -46,4 +46,17 @@
       "migrationsDir": "./models/migrations",
       "subscribersDir": "./models/subscribers"
    }
+}, {
+   "name": "test",
+   "type": "postgres",
+   "host": "127.0.0.1",
+   "port": 5432,
+   "username": "postgres",
+   "password": "toto42",
+   "database": "ts_seed_api_test",
+   "synchronize": true,
+   "logging": false,
+   "entities": [
+      "./models/models/**/*.ts"
+   ]
 }]

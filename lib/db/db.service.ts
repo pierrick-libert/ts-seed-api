@@ -5,10 +5,19 @@ export class Database {
   private name: string;
   private connection: Connection;
   private connectionManager: ConnectionManager;
+  private static instance: Database;
 
-  constructor(name: string = 'default') {
+  private constructor(name: string = 'default') {
     this.name = name;
     this.connectionManager = getConnectionManager();
+  }
+
+  // Singleton implementation
+  public static getInstance(name: string = 'default'): Database {
+    if (!Database.instance) {
+      Database.instance = new Database(name);
+    }
+    return Database.instance;
   }
 
   public async getConnection(name: string | null = null): Promise<Connection> {

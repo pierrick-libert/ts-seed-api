@@ -11,13 +11,11 @@ import {MiddlewareFactory} from '../middleware/middleware.factory';
 export class AppService {
 
   public port: number;
-  public loggerService: LoggerService;
   public app: express.Application;
 
-  constructor(endpoints: Endpoint[], loggerService: LoggerService, port: number) {
+  constructor(endpoints: Endpoint[], port: number) {
     this.app = express();
     this.port = port;
-    this.loggerService = loggerService;
     // Call the inits
     this.initializeMiddlewares();
     this.initializeEndpoints(endpoints);
@@ -26,7 +24,7 @@ export class AppService {
 
   public listen(): void {
     this.app.listen(this.port, () => {
-      this.loggerService.getLogger().info(`App listening on the port ${this.port}`);
+      LoggerService.getInstance().logger.info(`App listening on the port ${this.port}`);
     });
   }
 

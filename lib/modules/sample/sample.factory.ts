@@ -9,8 +9,8 @@ export class SampleFactory {
   public createSchema(): any {
     return {
       properties: {
-        name: ValidFactory.getStringSchema(1),
-        lastname: ValidFactory.getStringSchema(0),
+        name: ValidFactory.getStringProperty(1),
+        lastname: ValidFactory.getStringProperty(0),
       },
       required: ['name'],
       type: 'object'
@@ -20,8 +20,9 @@ export class SampleFactory {
   public updateSchema(): any {
     return {
       properties: {
-        name: ValidFactory.getStringSchema(0),
-        lastname: ValidFactory.getStringSchema(0),
+        id: ValidFactory.getUuidProperty(),
+        name: ValidFactory.getStringProperty(0),
+        lastname: ValidFactory.getStringProperty(0),
       },
       required: [],
       type: 'object'

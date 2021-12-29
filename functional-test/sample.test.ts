@@ -1,223 +1,238 @@
 import {expect} from 'chai';
-import * as supertest from 'supertest';
-
-// This agent refers to PORT where program is runninng.
-const server = supertest.agent('http://localhost:8080');
+import supertest from 'supertest';
+import {exec} from 'child_process';
+import {Database} from '../lib/db/db.service';
+import {AppService} from '../lib/app/app.service';
+import {SampleEndpoint} from '../endpoints/sample';
 
 // Here are all the endpoints we're going to call
-const sampleApi = '/en/sample';
+const sampleApi = '/sample';
 
-// Return of call
-let token = '';
+// Variable used during the test
+let app: AppService;
+let sample_id: string;
 
-function startServerFirst(err: any, done: any) {
-  console.log('IMPORTANT: You need to start the server before proceeding to the functional tests' +
-    ' and to execute the script init-functional-test.sh');
-  return done(err);
+// Generic function to execute shell commands
+async function execShellCommand(command: string): Promise<any> {
+	return await new Promise((resolve, reject) => {
+		exec(command, (error, stdout, stderr) => {
+	    resolve(error);
+	  });
+	});
 }
 
-describe('Full process', function() {
-  // Set a higher timeout than 2s since we connect to Zoho
+before(async function() {
+	// Increase the timeout
+	this.timeout(30000);
+	// Delete the test DB if it exists
+	let error = await execShellCommand('npm run typeorm query "DROP DATABASE IF EXISTS ts_seed_api_test"');
+	if (error) {
+		console.info('An error occured while creating the DB');
+		process.exit(1);
+	}
+	// Create the test DB
+	error = await execShellCommand('npm run typeorm query "CREATE DATABASE ts_seed_api_test"');
+	if (error) {
+		console.info('An error occured while creating the DB');
+		process.exit(1);
+	}
+	// Init the app service with the routes we wish to use for this test
+	app = new AppService(
+    [await new SampleEndpoint().init('test')],
+    8090,
+  );
+});
+
+after(async function() {
+	// Increase the timeout
+	this.timeout(30000);
+	// Close all connections created for this test
+	(await Database.getInstance().getConnection('test')).close();exec
+	// Delete the test DB created above
+	const error = await new Promise((resolve, reject) => {
+		exec('npm run typeorm query "DROP DATABASE IF EXISTS ts_seed_api_test"', (error, stdout, stderr) => {
+	    resolve(error);
+	  });
+	});
+	if (error) {
+		console.info(error)
+		console.info('An error occured while deleting the DB');
+		process.exit(1);
+	}
+});
+
+describe('Working process', function() {
+  // Set a higher timeout than 2s
   this.timeout(30000);
 
-  it('GET call', function(done) {
-    server
-      .get(sampleApi)
-      .expect('Content-type', /json/)
-      .expect(200)
-      .end(function(err, res) {
-        if (err !== null) {
-          return startServerFirst(err, done);
-        } else {
-          // Make necessary verification on the response
-          expect(res.body.message).to.be.a('string');
-          expect(res.body.message).to.be.equal('GET good');
-          done();
-        }
-      });
-  });
-
-  it('POST call', function(done) {
-    server
+  it('POST Sample', (done) => {
+    supertest(app.app)
       .post(sampleApi)
       .expect('Content-type', /json/)
+      .expect('Accept-Language', /en/)
       .expect(201)
-      .end(function(err, res) {
-
-        if (err !== null) {
-          return startServerFirst(err, done);
-        } else {
-          // Make necessary verification on the response
-          expect(res.body.message).to.be.a('string');
-          expect(res.body.message).to.be.equal('POST good');
-          done();
-        }
+      .send({'name': 'Fake Sample'})
+      .end((err, res) => {
+      	expect(res.body).to.be.an('object');
+      	expect(res.body.id).to.be.an('string');
+      	sample_id = res.body.id;
+        done();
       });
-  });
+	});
 
-  it('PUT call', function(done) {
-    server
-      .put(`${sampleApi}/2`)
+  it('GET Sample By ID', (done) => {
+    supertest(app.app)
+      .get(`${sampleApi}/${sample_id}`)
       .expect('Content-type', /json/)
+      .expect('Accept-Language', /en/)
       .expect(200)
-      .end(function(err, res) {
-
-        if (err !== null) {
-          return startServerFirst(err, done);
-        } else {
-          // Make necessary verification on the response
-          expect(res.body.message).to.be.a('string');
-          expect(res.body.message).to.be.equal('PUT good');
-          done();
-        }
+      .end((err, res) => {
+      	expect(res.body).to.be.an('object');
+      	expect(res.body.id).to.be.an('string');
+      	expect(res.body.name).to.be.an('string');
+      	expect(res.body.name).to.equal('Fake Sample');
+      	expect(res.body.lastname).to.be.null;
+        done();
       });
-  });
+	});
 
-  it('POST auth call', function(done) {
-    server
-      .post(`${sampleApi}/auth`)
-      .send({'email': 'test@kalvad.com', 'password': 'kalvad42'})
+  it('PUT Sample', (done) => {
+    supertest(app.app)
+      .put(`${sampleApi}/${sample_id}`)
       .expect('Content-type', /json/)
+      .expect('Accept-Language', /en/)
       .expect(200)
-      .end(function(err, res) {
-
-        if (err !== null) {
-          return startServerFirst(err, done);
-        } else {
-          // Make necessary verification on the response
-          expect(res.body.message).to.be.a('string');
-          expect(res.body.token).to.be.a('string');
-          token = res.body.token;
-          done();
-        }
+      .send({'lastname': 'Fake Lastname'})
+      .end((err, res) => {
+      	expect(res.body).to.be.an('object');
+      	expect(res.body.id).to.be.an('string');
+        done();
       });
-  });
+	});
 
-  it('GET logged user call', function(done) {
-    server
-      .get(`${sampleApi}/logged`)
-      .set('Authorization', `Bearer ${token}`)
+  it('GET Samples', (done) => {
+    supertest(app.app)
+      .get(sampleApi)
       .expect('Content-type', /json/)
+      .expect('Accept-Language', /en/)
       .expect(200)
-      .end(function(err, res) {
-
-        if (err !== null) {
-          return startServerFirst(err, done);
-        } else {
-          // Make necessary verification on the response
-          expect(res.body.message).to.be.a('string');
-          expect(res.body.user).to.be.a('object');
-          expect(res.body.user.id).to.be.a('string');
-          expect(res.body.user.id).to.be.equal('1');
-          done();
-        }
+      .end((err, res) => {
+      	expect(res.body).to.be.an('array');
+      	expect(res.body.length).to.equal(1);
+        done();
       });
-  });
+	});
 
-  it('GET error call', function(done) {
-    server
-      .get(`${sampleApi}/error`)
+  it('DELETE Sample', (done) => {
+    supertest(app.app)
+      .delete(`${sampleApi}/${sample_id}`)
       .expect('Content-type', /json/)
-      .expect(500)
-      .end(function(err, res) {
-        if (err !== null) {
-          return startServerFirst(err, done);
-        } else {
-          // Make necessary verification on the response
-          expect(res.body.message).to.be.a('string');
-          expect(res.body.message).to.be.equal('Internal Error');
-          done();
-        }
+      .expect('Accept-Language', /en/)
+      .expect(200)
+      .end((err, res) => {
+      	expect(res.body).to.be.an('object');
+        done();
       });
-  });
+	});
 
-  it('GET error not found call', function(done) {
-    server
-      .get(`${sampleApi}/error-not-found`)
+  it('GET Sample By ID - Not Found', (done) => {
+    supertest(app.app)
+      .get(`${sampleApi}/${sample_id}`)
       .expect('Content-type', /json/)
+      .expect('Accept-Language', /en/)
       .expect(404)
-      .end(function(err, res) {
-
-        if (err !== null) {
-          return startServerFirst(err, done);
-        } else {
-          // Make necessary verification on the response
-          expect(res.body.message).to.be.a('string');
-          expect(res.body.message).to.be.equal('My resource referred as Resource has not been found');
-          done();
-        }
+      .end((err, res) => {
+      	expect(res.body).to.be.an('object');
+      	expect(res.body.message).to.be.an('string');
+        done();
       });
-  });
+	});
 
-  it('GET bad request call', function(done) {
-    server
-      .get(`${sampleApi}/bad-request`)
+  it('GET Samples - Empty', (done) => {
+    supertest(app.app)
+      .get(sampleApi)
       .expect('Content-type', /json/)
+      .expect('Accept-Language', /en/)
+      .expect(200)
+      .end((err, res) => {
+      	expect(res.body).to.be.an('array');
+      	expect(res.body.length).to.equal(0);
+        done();
+      });
+	});
+});
+
+describe('Handling error process', function() {
+  // Set a higher timeout than 2s
+  this.timeout(30000);
+
+  it('POST Sample - Null Name', (done) => {
+    supertest(app.app)
+      .post(sampleApi)
+      .expect('Content-type', /json/)
+      .expect('Accept-Language', /en/)
       .expect(400)
-      .end(function(err, res) {
-
-        if (err !== null) {
-          return startServerFirst(err, done);
-        } else {
-          // Make necessary verification on the response
-          expect(res.body.message).to.be.a('string');
-          expect(res.body.message).to.be.equal('Wrong payload');
-          done();
-        }
+      .send({'name': null})
+      .end((err, res) => {
+      	expect(res.body).to.be.an('object');
+      	expect(res.body.message).to.be.an('string');
+        done();
       });
-  });
+	});
 
-  it('GET resource not created call', function(done) {
-    server
-      .get(`${sampleApi}/resource-not-created`)
+  it('POST Sample - Empty Name', (done) => {
+    supertest(app.app)
+      .post(sampleApi)
       .expect('Content-type', /json/)
+      .expect('Accept-Language', /en/)
       .expect(400)
-      .end(function(err, res) {
-
-        if (err !== null) {
-          return startServerFirst(err, done);
-        } else {
-          // Make necessary verification on the response
-          expect(res.body.message).to.be.a('string');
-          expect(res.body.message).to.be.equal('Resource creation has failed');
-          done();
-        }
+      .send({'name': ''})
+      .end((err, res) => {
+      	expect(res.body).to.be.an('object');
+      	expect(res.body.message).to.be.an('string');
+        done();
       });
-  });
+	});
 
-  it('GET login required error call', function(done) {
-    server
-      .get(`${sampleApi}/logged`)
+  it('POST Sample - Empty Data', (done) => {
+    supertest(app.app)
+      .post(sampleApi)
       .expect('Content-type', /json/)
-      .expect(401)
-      .end(function(err, res) {
-
-        if (err !== null) {
-          return startServerFirst(err, done);
-        } else {
-          // Make necessary verification on the response
-          expect(res.body.message).to.be.a('string');
-          expect(res.body.message).to.be.equal('You must be logged in to request this endpoint');
-          done();
-        }
+      .expect('Accept-Language', /en/)
+      .expect(400)
+      .send({})
+      .end((err, res) => {
+      	expect(res.body).to.be.an('object');
+      	expect(res.body.message).to.be.an('string');
+        done();
       });
-  });
+	});
 
-  it('GET error endpoint does not exist', function(done) {
-    server
-      .get('/toto')
+  it('PUT Sample - Not an ID', (done) => {
+    supertest(app.app)
+      .put(`${sampleApi}/toto`)
       .expect('Content-type', /json/)
-      .expect(404)
-      .end(function(err, res) {
-
-        if (err !== null) {
-          return startServerFirst(err, done);
-        } else {
-          // Make necessary verification on the response
-          expect(res.body.message).to.be.a('string');
-          done();
-        }
+      .expect('Accept-Language', /en/)
+      .expect(400)
+      .send({'lastname': 'Fake Lastname'})
+      .end((err, res) => {
+      	expect(res.body).to.be.an('object');
+      	expect(res.body.message).to.be.an('string');
+        done();
       });
-  });
+	});
+
+  it('GET Sample - Not an ID', (done) => {
+    supertest(app.app)
+      .get(`${sampleApi}/toto`)
+      .expect('Content-type', /json/)
+      .expect('Accept-Language', /en/)
+      .expect(400)
+      .end((err, res) => {
+      	expect(res.body).to.be.an('object');
+      	expect(res.body.message).to.be.an('string');
+        done();
+      });
+	});
 
 });

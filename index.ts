@@ -1,16 +1,11 @@
 import 'reflect-metadata';
 import yargs from 'yargs';
-import {Database} from './lib/db/db.service';
+import {Config} from './lib/config';
 import {AppService} from './lib/app/app.service';
-import {SentryFactory} from './lib/sentry/sentry.factory';
-import {LoggerFactory} from './lib/logger/logger.factory';
 import {LoggerService} from './lib/logger/logger.service';
 
 // List all endpoints used by your applications
 import {SampleEndpoint} from './endpoints/sample';
-
-// Define if we're in a production env
-const isProd = process.env.NODE_ENV === 'production';
 
 // Parse arguments to handle options
 const argv = yargs(process.argv.slice(2))
@@ -22,23 +17,15 @@ const argv = yargs(process.argv.slice(2))
   .help('h').alias('h', 'help')
   .parseSync();
 
-// Init the sentry with proper information
-new SentryFactory(isProd);
-// Init the DB Pool
-const db = new Database(argv.orm);
-// Init the logger
-const logger = new LoggerService(new LoggerFactory(isProd));
-
-if (isProd === false) {
-  logger.getLogger().debug('Logging initialized at debug level');
+if (Config.isProd === false) {
+  LoggerService.getInstance().logger.debug('Logging initialized at debug level');
 }
 (async () => {
   // Add all your endpoints there
   const app = new AppService(
     [
-      await new SampleEndpoint(logger).init(db),
+      await new SampleEndpoint().init(argv.orm),
     ],
-    logger,
     argv.port,
   );
 

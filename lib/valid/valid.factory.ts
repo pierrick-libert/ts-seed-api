@@ -7,7 +7,7 @@ export class ValidFactory {
   ******************************************************************/
 
   // String basic schema
-  public static getStringSchema(minLength: number = 1, format: string = ''): ValidInterface.StringSchema {
+  public static getStringProperty(minLength: number = 1, format: string = ''): ValidInterface.StringSchema {
     const schema = {
       type: 'string',
       minLength
@@ -18,20 +18,20 @@ export class ValidFactory {
     return schema;
   }
   // Number basic schema
-  public static getNumberSchema(minimum: number = 0): ValidInterface.NumberSchema {
+  public static getNumberProperty(minimum: number = 0): ValidInterface.NumberSchema {
     return {
       type: 'number',
       minimum
     };
   }
   // Boolean basic schema
-  public static getBooleanSchema(): ValidInterface.BooleanSchema {
+  public static getBooleanProperty(): ValidInterface.BooleanSchema {
     return {
       type: 'boolean'
     };
   }
   // Check basic format date
-  public static getFormatDateSchema(): ValidInterface.StringSchema {
+  public static getFormatDateProperty(): ValidInterface.StringSchema {
     return {
       type: 'string',
       format: 'date',
@@ -40,7 +40,7 @@ export class ValidFactory {
     };
   }
   // Check uuid format
-  public static getUuidSchema(minLength: number = 1): ValidInterface.StringSchema {
+  public static getUuidProperty(minLength: number = 1): ValidInterface.StringSchema {
     return {
       type: 'string',
       minLength,
@@ -48,7 +48,7 @@ export class ValidFactory {
     };
   }
   // Check if a parameter is a number for query string parameter
-  public static getStringNumberSchema(): ValidInterface.StringSchema {
+  public static getStringNumberProperty(): ValidInterface.StringSchema {
     return {
       type: 'string',
       minLength: 1,
@@ -64,7 +64,18 @@ export class ValidFactory {
   public static getIdSchema(): any {
     return {
       properties: {
-        id: ValidFactory.getStringSchema(1)
+        id: ValidFactory.getStringProperty(1)
+      },
+      required: ['id'],
+      type: 'object'
+    };
+  }
+
+  // Generic valid for uuiid
+  public static getUuidSchema(): any {
+    return {
+      properties: {
+        id: ValidFactory.getUuidProperty(1)
       },
       required: ['id'],
       type: 'object'

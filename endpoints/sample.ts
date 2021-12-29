@@ -1,7 +1,7 @@
 import {Params} from '../lib/enum';
-import {Repository, InsertResult} from 'typeorm';
 import {Database} from '../lib/db/db.service';
 import {Sample} from '../models/models/sample';
+import {Repository, InsertResult} from 'typeorm';
 import {Endpoint} from '../lib/app/app.interface';
 import {ValidService} from '../lib/valid/valid.service';
 import {ValidFactory} from '../lib/valid/valid.factory';
@@ -16,22 +16,21 @@ import {ResourceNotCreatedException} from '../lib/exceptions/resource-not-create
 
 export class SampleEndpoint implements Endpoint {
 
-  public logger: LoggerService;
   public factory: SampleFactory;
   public router: Router = Router();
   public validService: ValidService;
   public repository: Repository<Sample>;
   public basePath = '/sample';
 
-  constructor(logger: LoggerService) {
-    this.logger = logger;
+  constructor() {
     this.factory = new SampleFactory();
     this.validService = new ValidService();
     this.initializeRoutes();
   }
 
-  public async init(db: Database): Promise<SampleEndpoint> {
-    this.repository = await (await db.getConnection()).getRepository(Sample);
+  public async init(orm: string = 'default'): Promise<SampleEndpoint> {
+    const connection = await Database.getInstance(orm).getConnection()
+    this.repository = await connection.getRepository(Sample);
     return this;
   }
 
@@ -64,7 +63,8 @@ export class SampleEndpoint implements Endpoint {
     try {
       data = await this.repository.createQueryBuilder('sample').getMany();
     } catch (error) {
-      this.logger.getLogger().error(error);
+      console.info('here?')
+      LoggerService.getInstance().logger.error(error);
       return next(new HttpException(500, error.message));
     }
     ResponseFactory.make(200, data, res);
@@ -81,7 +81,7 @@ export class SampleEndpoint implements Endpoint {
   public async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
     // First check if the value is correct
     const valid = this.validService.checkParamsValidity(
-      '[Sample] Get By Id', [Params.Path], ValidFactory.getIdSchema(), req);
+      '[Sample] Get By Id', [Params.Path], ValidFactory.getUuidSchema(), req);
     if (valid.success === false) {
       return next(new BadRequestException(valid.message));
     }
@@ -94,7 +94,7 @@ export class SampleEndpoint implements Endpoint {
         return next(new ItemNotFoundException(req.params.id, 'Sample'));
       }
     } catch (error) {
-      this.logger.getLogger().error(error);
+      LoggerService.getInstance().logger.error(error);
       return next(new HttpException(500, error.message));
     }
     ResponseFactory.make(200, data, res);
@@ -127,7 +127,7 @@ export class SampleEndpoint implements Endpoint {
         return next(new ResourceNotCreatedException());
       }
     } catch (error) {
-      this.logger.getLogger().error(error);
+      LoggerService.getInstance().logger.error(error);
       return next(new HttpException(500, error.message));
     }
     ResponseFactory.make(201, {'id': data.raw[0].id}, res);
@@ -156,7 +156,7 @@ export class SampleEndpoint implements Endpoint {
     try {
       await this.repository.update(req.params.id, req.body as Sample);
     } catch (error) {
-      this.logger.getLogger().error(error);
+      LoggerService.getInstance().logger.error(error);
       return next(new HttpException(500, error.message));
     }
     ResponseFactory.make(200, {'id': req.params.id}, res);
@@ -177,7 +177,7 @@ export class SampleEndpoint implements Endpoint {
   public async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
     // First check if the value is correct
     const valid = this.validService.checkParamsValidity(
-      '[Sample] Delete', [Params.Path], ValidFactory.getIdSchema(), req);
+      '[Sample] Delete', [Params.Path], ValidFactory.getUuidSchema(), req);
     if (valid.success === false) {
       return next(new BadRequestException(valid.message));
     }
@@ -185,7 +185,7 @@ export class SampleEndpoint implements Endpoint {
     try {
       await this.repository.delete(req.params.id);
     } catch (error) {
-      this.logger.getLogger().error(error);
+      LoggerService.getInstance().logger.error(error);
       return next(new HttpException(500, error.message));
     }
     ResponseFactory.make(200, {}, res);
