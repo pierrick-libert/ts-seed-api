@@ -52,10 +52,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+                type: array
+                items:
+                  $ref: 'components/sample.yml#/components/schemas/Sample'
     post:
       tags:
         - Sample

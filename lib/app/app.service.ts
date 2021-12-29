@@ -1,8 +1,10 @@
 import cors from 'cors';
 import i18n from 'i18n';
 import path from 'path';
+import yaml from 'yamljs';
 import {Endpoint} from './app.interface';
 import fileUpload from 'express-fileupload';
+import {serve, setup} from 'swagger-ui-express';
 import express, {RequestHandler} from 'express';
 import {LoggerService} from '../logger/logger.service';
 import {ResponseFactory} from '../response/response.factory';
@@ -52,6 +54,7 @@ export class AppService {
 
   // Init all routes for all endpoints mapped in index.ts
   private initializeEndpoints(endpoints: Endpoint[]): void {
+    this.app.use('/swagger', serve, setup(yaml.load('./swagger/swagger-generated.yml')));
     endpoints.forEach((endpoint: Endpoint) => {
       this.app.use('/', endpoint.router);
     });
