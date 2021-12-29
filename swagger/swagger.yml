@@ -10,149 +10,91 @@ servers:
     description: Internal staging server
 
 paths:
-  /{lang}/sample/auth:
+  /sample:
     parameters:
-      - $ref: '#/components/parameters/DefaultLangPath'
-    post:
-      tags:
-        - Sample
-      summary: Authenticate a user
-      requestBody:
-        $ref: '#/components/requestBodies/DefaultAuthenticate'
-      responses:
-        200:
-          description: A JSON object with data
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  user:
-                    $ref: '#/components/schemas/GetUserResponse'
-                  token:
-                    type: string
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-  /{lang}/sample:
-    parameters:
-      - $ref: '#/components/parameters/DefaultLangPath'
+      - $ref: '#/components/parameters/DefaultLangHeader'
     get:
       tags:
         - Sample
-      security:
-        - BearerAuth: []
-      summary: Get a success message
+      summary: GET Sample
+      description: Get all samples in DB
       responses:
         200:
-          description: A JSON object with data
+          description: A list of samples
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: 'components/sample.yml#/components/schemas/Sample'
+        500:
+          $ref: '#/components/responses/InternalError'
     post:
       tags:
         - Sample
-      security:
-        - BearerAuth: []
-      summary: Get a success post message
+      summary: POST Sample
+      description: Create a sample
+      requestBody:
+        $ref: 'components/sample.yml#/components/requestBodies/PostSampleBody'
       responses:
         201:
-          description: A JSON object with data
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-  /{lang}/sample/logged:
-    parameters:
-      - $ref: '#/components/parameters/DefaultLangPath'
-    get:
-      tags:
-        - Sample
-      security:
-          - BearerAuth: []
-      summary: Get a specific details for the logged user
-      responses:
-        200:
-          description: A JSON object with data
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  user:
-                    $ref: '#/components/schemas/GetUserResponse'
-  /{lang}/sample/error:
-    parameters:
-      - $ref: '#/components/parameters/DefaultLangPath'
-    get:
-      tags:
-        - Sample
-      security:
-        - BearerAuth: []
-      summary: Get an error message
-      responses:
+          $ref: '#/components/responses/ResourceCreated'
+        400:
+          $ref: '#/components/responses/BadRequest'
         500:
           $ref: '#/components/responses/InternalError'
-  /{lang}/sample/error-not-found:
+  /sample/{id}:
     parameters:
-      - $ref: '#/components/parameters/DefaultLangPath'
+      - $ref: '#/components/parameters/DefaultUUIDPath'
+      - $ref: '#/components/parameters/DefaultLangHeader'
     get:
       tags:
         - Sample
-      security:
-        - BearerAuth: []
-      summary: Get an error message
+      summary: GET Sample by ID
+      description: Get a specific sample based on its ID
       responses:
+        200:
+          description: A specific sample
+          content:
+            application/json:
+              schema:
+                $ref: 'components/sample.yml#/components/schemas/Sample'
+        400:
+          $ref: '#/components/responses/BadRequest'
         404:
           $ref: '#/components/responses/NotFound'
-  /{lang}/sample/bad-request:
-    parameters:
-      - $ref: '#/components/parameters/DefaultLangPath'
-    get:
-      tags:
-        - Sample
-      security:
-        - BearerAuth: []
-      summary: Get an error message
-      responses:
-        400:
-          $ref: '#/components/responses/BadRequest'
-  /{lang}/sample/resource-not-created:
-    parameters:
-      - $ref: '#/components/parameters/DefaultLangPath'
-    get:
-      tags:
-        - Sample
-      security:
-        - BearerAuth: []
-      summary: Get an error message
-      responses:
-        400:
-          $ref: '#/components/responses/BadRequest'
-  /{lang}/sample/{id}:
-    parameters:
-      - $ref: '#/components/parameters/DefaultLangPath'
-      - $ref: '#/components/parameters/DefaultIDPath'
+        500:
+          $ref: '#/components/responses/InternalError'
     put:
       tags:
         - Sample
-      security:
-          - BearerAuth: []
-      summary: Get success message for PUT
+      summary: PUT Sample
+      description: Update a sample
+      requestBody:
+        $ref: 'components/sample.yml#/components/requestBodies/PutSampleBody'
       responses:
         200:
-          $ref: '#/components/responses/GenericSucces'
+          $ref: '#/components/responses/ResourceCreated'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalError'
+    delete:
+      tags:
+        - Sample
+      summary: DELETE Sample by ID
+      description: Delete a specific sample based on its ID
+      responses:
+        200:
+          description: Returns an empty object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyBodyGeneral'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalError'
 
 tags:
   - name: Sample
@@ -169,6 +111,18 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/BodyGeneral'
+    ResourceCreated:
+      description: A message saying everything went well with the id of the resource created
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/BodyGeneral'
+              - type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
     BadRequest:
       description: A message with the details of the bad parameters
       content:
@@ -176,7 +130,7 @@ components:
           schema:
             $ref: '#/components/schemas/BodyGeneral'
     Unauthorized:
-      description: A message requesting a JWT token
+      description: A message requesting an auth method
       content:
         application/json:
           schema:
@@ -200,47 +154,29 @@ components:
           schema:
             $ref: '#/components/schemas/BodyGeneral'
   parameters:
-    DefaultLangPath:
-      in: path
-      name: lang
-      required: true
-      schema:
-        type: string
-        enum: [en]
-      description: Default lang parameters
-    DefaultIDPath:
+    DefaultUUIDPath:
       in: path
       name: id
       required: true
       schema:
         type: string
-      description: ID of a resource
-  requestBodies:
-    # USER RESPONSE
-    DefaultAuthenticate:
+        format: uuid
+      description: UUID of a resource
+    DefaultLangHeader:
+      in: header
+      name: HTTP_ACCEPT_LANGUAGE
       required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              email:
-                type: string
-              password:
-                type: string
+      schema:
+        type: string
+        enum:
+          - fr
+          - en
+      description: Language to use during the treatment of the request
   schemas:
     BodyGeneral:
       type: object
       properties:
         message:
           type: string
-    # USER RESPONSE
-    GetUserResponse:
+    EmptyBodyGeneral:
       type: object
-      properties:
-        id:
-          type: string
-        email:
-          type: string
-        role:
-          type: string

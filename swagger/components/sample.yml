@@ -1,8 +1,42 @@
 openapi: 3.0.0
 
 components:
+  requestBodies:
+    # SAMPLE BODY
+    PostSampleBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                minLength: 1
+                maxLength: 100
+              lastname:
+                type: string
+                minLength: 1
+                maxLength: 100
+            required:
+              - name
+    PutSampleBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                minLength: 1
+                maxLength: 100
+              lastname:
+                type: string
+                minLength: 1
+                maxLength: 100
   schemas:
-    # SAMPLE RESPONSE
+    # SAMPLE MODEL
     Sample:
       type: object
       properties:
@@ -11,5 +45,9 @@ components:
           format: uuid
         name:
           type: string
+          minLength: 1
+          maxLength: 100
         lastname:
           type: string
+          minLength: 0
+          maxLength: 100

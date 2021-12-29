@@ -63,7 +63,6 @@ export class SampleEndpoint implements Endpoint {
     try {
       data = await this.repository.createQueryBuilder('sample').getMany();
     } catch (error) {
-      console.info('here?')
       LoggerService.getInstance().logger.error(error);
       return next(new HttpException(500, error.message));
     }
