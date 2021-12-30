@@ -2,10 +2,10 @@ import {Connection, ConnectionManager, createConnection,
   getConnectionManager, getConnectionOptions} from 'typeorm';
 
 export class Database {
+  private static instance: Database;
   private name: string;
   private connection: Connection;
   private connectionManager: ConnectionManager;
-  private static instance: Database;
 
   private constructor(name: string = 'default') {
     this.name = name;

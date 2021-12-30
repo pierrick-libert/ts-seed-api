@@ -10,6 +10,7 @@ services:
         environment:
             - SENTRY_DSN=${SENTRY_URL}
             - DEBUG=${DEBUG:-true}
+            - NODE_ENV=${NODE_ENV:-dev}
         ports:
             - 8083:8083
         networks:

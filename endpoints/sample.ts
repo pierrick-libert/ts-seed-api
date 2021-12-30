@@ -29,7 +29,7 @@ export class SampleEndpoint implements Endpoint {
   }
 
   public async init(orm: string = 'default'): Promise<SampleEndpoint> {
-    const connection = await Database.getInstance(orm).getConnection()
+    const connection = await Database.getInstance(orm).getConnection();
     this.repository = await connection.getRepository(Sample);
     return this;
   }

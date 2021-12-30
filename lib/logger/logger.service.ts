@@ -3,8 +3,8 @@ import {init, captureException} from '@sentry/node';
 import {createLogger, format, transports, Logger, LogEntry} from 'winston';
 
 export class LoggerService {
-  public logger: Logger;
   private static instance: LoggerService;
+  public logger: Logger;
 
   private constructor() {
     // Init the sentry if we have one
