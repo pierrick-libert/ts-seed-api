@@ -24,7 +24,7 @@
       "API",
       "CRUD"
    ],
-   "author": "",
+   "author": "Pierrick Libert <pierrick.libert@gmail.com>",
    "license": "ISC",
    "bugs": {
       "url": "https://github.com/pierrick-libert/ts-seed-api/issues"
