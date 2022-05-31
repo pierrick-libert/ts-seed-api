@@ -85,7 +85,7 @@ export class SampleEndpoint implements Endpoint {
       return next(new BadRequestException(valid.message));
     }
     // Try to retrieve the resource from its ID
-    let data: Sample | undefined = {} as Sample | undefined;
+    let data: Sample | null = {} as Sample | null;
     try {
       data = await this.repository.createQueryBuilder('sample')
         .where('sample.id = :id', {id: req.params.id}).getOne();

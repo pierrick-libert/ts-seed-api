@@ -26,13 +26,13 @@ before(async function() {
   // Increase the timeout
   this.timeout(30000);
   // Delete the test DB if it exists
-  let error = await execShellCommand('npm run typeorm query "DROP DATABASE IF EXISTS ts_seed_api_test"');
+  let error = await execShellCommand('npm run typeorm query "DROP DATABASE IF EXISTS ts_seed_api_test" -- -d test.ormconfig.ts');
   if (error) {
     LoggerService.getInstance().logger.debug('An error occured while creating the DB');
     process.exit(1);
   }
   // Create the test DB
-  error = await execShellCommand('npm run typeorm query "CREATE DATABASE ts_seed_api_test"');
+  error = await execShellCommand('npm run typeorm query "CREATE DATABASE ts_seed_api_test" -- -d test.ormconfig.ts');
   if (error) {
     LoggerService.getInstance().logger.debug('An error occured while creating the DB');
     process.exit(1);
@@ -50,8 +50,9 @@ after(async function() {
   // Close all connections created for this test
   (await Database.getInstance().getConnection('test')).close();
   // Delete the test DB created above
-  const error = await execShellCommand('npm run typeorm query "DROP DATABASE IF EXISTS ts_seed_api_test"');
+  const error = await execShellCommand('npm run typeorm query "DROP DATABASE IF EXISTS ts_seed_api_test" -- -d test.ormconfig.ts');
   if (error) {
+    console.info(error);
     LoggerService.getInstance().logger.debug('An error occured while deleting the DB');
     process.exit(1);
   }
